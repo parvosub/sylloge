@@ -1,0 +1,30 @@
+# Build artifacts
+/bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go tools
+.gotools/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local config
+.env
+sylloge.toml
+
+# Runtime database
+*.db
+*.db-journal
+*.db-wal
+*.db.backup

@@ -1,0 +1,15 @@
+{{define "classList"}}
+{{if .Classes}}
+<div class="dashboard-grid">
+    {{range .Classes}}
+    <a class="class-card" href="/classes/{{.ID}}">
+        <span class="class-card-name">{{.Name}}</span>
+    </a>
+    {{end}}
+</div>
+{{else}}
+<div class="empty-state">
+    No classes yet. Click “Add Class” above to create your first class.
+</div>
+{{end}}
+{{end}}

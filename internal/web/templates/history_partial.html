@@ -1,0 +1,16 @@
+{{define "historyList"}}
+{{if .Summaries}}
+<div class="note-list">
+    {{range .Summaries}}
+    <article class="summary">
+        <div class="summary-meta">Saved {{.CreatedAt | formatDate}}</div>
+        <p>{{.Content}}</p>
+    </article>
+    {{end}}
+</div>
+{{else}}
+<div class="empty-state">
+    No summaries yet. Generate a summary to start building history.
+</div>
+{{end}}
+{{end}}

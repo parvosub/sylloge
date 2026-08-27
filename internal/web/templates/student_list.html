@@ -1,0 +1,15 @@
+{{define "studentList"}}
+{{if .Students}}
+<div class="card-list">
+    {{range .Students}}
+    <a href="/students/{{.ID}}">
+        <span class="name">{{.Name}}</span>
+    </a>
+    {{end}}
+</div>
+{{else}}
+<div class="empty-state">
+    No students yet. Add one above.
+</div>
+{{end}}
+{{end}}

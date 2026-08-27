@@ -1,0 +1,134 @@
+{{define "main"}}
+<div class="card">
+    <h3>{{.StudentName}}</h3>
+
+    <h4>Add a Note</h4>
+    <p class="help-text">Type or paste observations about {{.StudentName}}'s work. Notes are saved as you add them.</p>
+    <form method="POST" action="/notes/{{.StudentID}}">
+        <div class="form-group">
+            <label for="notes">Student notes</label>
+            <textarea id="notes" name="notes" rows="10" required placeholder="Today {{.StudentName}} worked on...">{{.DraftNotes}}</textarea>
+        </div>
+        <button type="submit">Add Note</button>
+    </form>
+
+    {{if .RecentNotes}}
+    <div class="note-list">
+        <h5>Prior Notes</h5>
+        {{range .RecentNotes}}
+        <article class="note">
+            <p>{{.Content}}</p>
+            <div class="meta">Added {{.CreatedAt | formatDate}}</div>
+        </article>
+        {{end}}
+        {{if .OlderNotes}}
+        <button type="button" id="notes-toggle" class="btn-secondary btn-sm" onclick="toggleNotes()">Show older notes</button>
+        <div id="older-notes" style="display: none; flex-direction: column; gap: 12px;">
+            {{range .OlderNotes}}
+            <article class="note">
+                <p>{{.Content}}</p>
+                <div class="meta">Added {{.CreatedAt | formatDate}}</div>
+            </article>
+            {{end}}
+        </div>
+        {{end}}
+    </div>
+    {{end}}
+</div>
+
+<div class="card">
+    <h4>Summary</h4>
+    <p class="help-text">Summaries are editable. Generate a new version anytime.</p>
+
+    <button type="button"
+            class="btn-primary"
+            hx-post="/students/{{.StudentID}}/summary"
+            hx-target="#summary-section"
+            hx-swap="innerHTML"
+            hx-indicator="#summary-loading"
+            hx-disabled-elt="this">
+        <span class="spinner htmx-indicator"></span>
+        Generate Summary
+    </button>
+
+    <div id="summary-loading" class="htmx-indicator">
+        <span class="spinner"></span> Processing...
+    </div>
+
+    <div id="summary-section" aria-live="polite" aria-atomic="true">
+        {{template "summary" .}}
+    </div>
+</div>
+
+{{if .Summaries}}
+<div class="card">
+    <h4>Summary History</h4>
+    <button type="button" id="history-toggle" class="btn-secondary btn-sm" onclick="toggleHistory()">View full history</button>
+
+    <div id="history-section" style="display: none; margin-top: 16px;">
+        {{template "historyList" .}}
+    </div>
+</div>
+{{end}}
+
+<script>
+    async function copySummaryToClipboard() {
+        const summary = document.getElementById('summary');
+        if (!summary) return;
+
+        const html = summary.innerHTML;
+        const text = summary.innerText;
+
+        try {
+            if (navigator.clipboard && window.ClipboardItem) {
+                await navigator.clipboard.write([
+                    new ClipboardItem({
+                        'text/html': new Blob([html], { type: 'text/html' }),
+                        'text/plain': new Blob([text], { type: 'text/plain' })
+                    })
+                ]);
+            } else {
+                // Fallback for older browsers.
+                await navigator.clipboard.writeText(text);
+            }
+            showToast('Summary copied to clipboard', 'success');
+        } catch (err) {
+            showToast('Could not copy summary. Try selecting and copying manually.', 'error');
+        }
+    }
+
+    function downloadSummary(filename, text) {
+        const element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', filename);
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+    }
+
+    function toggleHistory() {
+        const section = document.getElementById('history-section');
+        const button = document.getElementById('history-toggle');
+        if (section.style.display === 'none') {
+            section.style.display = 'block';
+            button.textContent = 'Hide history';
+        } else {
+            section.style.display = 'none';
+            button.textContent = 'View full history';
+        }
+    }
+
+    function toggleNotes() {
+        const section = document.getElementById('older-notes');
+        const button = document.getElementById('notes-toggle');
+        if (section.style.display === 'none') {
+            section.style.display = 'flex';
+            button.textContent = 'Hide older notes';
+        } else {
+            section.style.display = 'none';
+            button.textContent = 'Show older notes';
+        }
+    }
+</script>
+{{end}}

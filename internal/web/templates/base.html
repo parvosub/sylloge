@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sylloge - Comment Website for Ms. Plumley</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <style>
+        :root {
+            --color-primary: #ff8000;
+            --color-primary-dark: #e67300;
+            --color-primary-text: #1a1a1a;
+            --color-secondary: #c0c0c0;
+            --color-secondary-dark: #a0a0a0;
+            --color-secondary-text: #1a1a1a;
+            --color-danger: #ec3333;
+            --color-danger-dark: #c42a2a;
+            --color-danger-text: #ffffff;
+            --color-accent: #ffec00;
+            --color-background: #f5f5f5;
+            --color-card: #ffffff;
+            --color-text: #1a1a1a;
+            --color-text-muted: #6b6b6b;
+            --color-border: #d6d6d6;
+            --color-info-bg: #f0f0f0;
+            --color-info-border: #c0c0c0;
+            --color-success-bg: #fff9e6;
+            --color-success-border: #ff8000;
+            --color-error-bg: #ffe6e6;
+            --color-error-border: #ec3333;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --shadow-focus: 0 0 0 3px rgba(255, 128, 0, 0.25);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            margin: 0;
+            padding: 24px 16px;
+            background-color: var(--color-background);
+            color: var(--color-text);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        header h1 {
+            margin: 0 0 4px 0;
+            font-size: 1.75rem;
+            color: var(--color-primary);
+        }
+
+        header h2 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--color-text-muted);
+        }
+
+        .card {
+            background-color: var(--color-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card h3, .card h4, .card h5 {
+            margin-top: 0;
+            margin-bottom: 16px;
+            color: var(--color-text);
+        }
+
+        .card h3 {
+            font-size: 1.25rem;
+        }
+
+        .card h4 {
+            font-size: 1.1rem;
+        }
+
+        .card h5 {
+            font-size: 1rem;
+        }
+
+        .card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card-list a {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background-color: var(--color-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            color: var(--color-text);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .card-list a:hover {
+            border-color: var(--color-primary);
+            box-shadow: var(--shadow);
+        }
+
+        .card-list a:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: var(--shadow-focus);
+        }
+
+        .card-list .name {
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            background-color: var(--color-background);
+            padding: 4px 8px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 32px 16px;
+            color: var(--color-text-muted);
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius-sm);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 1rem;
+            color: var(--color-text);
+            background-color: var(--color-card);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: var(--shadow-focus);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        button,
+        .btn-primary,
+        .btn-secondary,
+        .btn-danger {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            padding: 10px 18px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.15s ease, transform 0.05s ease;
+        }
+
+        button:focus,
+        .btn-primary:focus,
+        .btn-secondary:focus,
+        .btn-danger:focus {
+            outline: none;
+            box-shadow: var(--shadow-focus);
+        }
+
+        .btn-primary,
+        button[type="submit"] {
+            background-color: var(--color-primary);
+            color: var(--color-primary-text);
+        }
+
+        .btn-primary:hover,
+        button[type="submit"]:hover {
+            background-color: var(--color-primary-dark);
+        }
+
+        .btn-secondary {
+            background-color: var(--color-secondary);
+            color: var(--color-secondary-text);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--color-secondary-dark);
+        }
+
+        .btn-danger {
+            background-color: var(--color-danger);
+            color: var(--color-danger-text);
+        }
+
+        .btn-danger:hover {
+            background-color: var(--color-danger-dark);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.875rem;
+            min-height: 36px;
+        }
+
+        a {
+            color: var(--color-primary);
+        }
+
+        a:hover {
+            color: var(--color-primary-dark);
+        }
+
+        .breadcrumb {
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            color: var(--color-text-muted);
+        }
+
+        .breadcrumb a {
+            color: var(--color-primary);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb .current {
+            color: var(--color-text);
+            font-weight: 600;
+        }
+
+        .note-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .note {
+            background-color: var(--color-info-bg);
+            border-left: 4px solid var(--color-info-border);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            padding: 14px 16px;
+        }
+
+        .note p {
+            margin: 0 0 8px 0;
+            white-space: pre-wrap;
+        }
+
+        .note .meta {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+        }
+
+        .summary {
+            background-color: var(--color-success-bg);
+            border-left: 4px solid var(--color-success-border);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .summary h5 {
+            margin-top: 0;
+            margin-bottom: 12px;
+        }
+
+        .summary-box {
+            background-color: var(--color-card);
+            border: 1px solid var(--color-success-border);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            min-height: 120px;
+            max-height: 400px;
+            overflow-y: auto;
+            outline: none;
+        }
+
+        .summary-box:focus {
+            box-shadow: var(--shadow-focus);
+        }
+
+        .summary-box h4.summary-heading {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--color-text);
+            margin: 8px 0 2px 0;
+            padding: 0;
+            border-bottom: none;
+        }
+
+        .summary-box h4.summary-heading:first-child {
+            margin-top: 0;
+        }
+
+        .summary-box p {
+            margin: 0 0 6px 0;
+            line-height: 1.5;
+        }
+
+        .summary-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        .summary-box strong {
+            font-weight: 700;
+            color: var(--color-text);
+        }
+
+        .summary-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+            align-items: center;
+        }
+
+        .summary-meta {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+            margin-top: 8px;
+        }
+
+        .error {
+            color: var(--color-danger);
+            background-color: var(--color-error-bg);
+            border: 1px solid var(--color-error-border);
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            margin: 12px 0;
+        }
+
+        .success {
+            color: var(--color-text);
+            background-color: var(--color-success-bg);
+            border: 1px solid var(--color-success-border);
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            margin: 12px 0;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 128, 0, 0.3);
+            border-top-color: var(--color-primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .htmx-indicator {
+            display: none;
+            align-items: center;
+            color: var(--color-text-muted);
+            font-size: 0.95rem;
+            margin-top: 12px;
+        }
+
+        .htmx-request .htmx-indicator,
+        .htmx-indicator.htmx-request {
+            display: inline-flex;
+        }
+
+        .htmx-request {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        #toast-container {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-width: 320px;
+        }
+
+        .toast {
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow);
+            color: white;
+            font-weight: 500;
+            animation: slideIn 0.2s ease;
+        }
+
+        .toast.success {
+            background-color: var(--color-accent);
+            color: var(--color-text);
+        }
+
+        .toast.error {
+            background-color: var(--color-danger);
+            color: var(--color-danger-text);
+        }
+
+        .toast.info {
+            background-color: var(--color-secondary);
+            color: var(--color-secondary-text);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .help-text {
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+            margin-top: 4px;
+        }
+
+        .char-counter {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-header h3 {
+            margin: 0;
+        }
+
+        .dashboard-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .class-card {
+            flex: 1 1 200px;
+            max-width: 260px;
+            min-width: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 32px 20px;
+            background-color: var(--color-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            text-decoration: none;
+            color: var(--color-text);
+            box-shadow: var(--shadow);
+            transition: border-color 0.15s ease, transform 0.1s ease;
+        }
+
+        .class-card:hover {
+            border-color: var(--color-primary);
+            transform: translateY(-2px);
+        }
+
+        .class-card:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: var(--shadow-focus);
+        }
+
+        .class-card-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 16px 12px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            .button-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            button,
+            .btn-primary,
+            .btn-secondary,
+            .btn-danger {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+    <div class="container">
+        <header>
+            <h1>Sylloge</h1>
+            <h2>Comment Website for Ms. Plumley</h2>
+        </header>
+        {{if .Breadcrumb}}
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+            {{.Breadcrumb}}
+        </nav>
+        {{end}}
+        <main>
+            {{template "main" .}}
+        </main>
+    </div>
+    <script>
+        function showToast(message, type) {
+            type = type || 'info';
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.textContent = message;
+            toast.setAttribute('role', 'status');
+            toast.setAttribute('aria-live', 'polite');
+
+            container.appendChild(toast);
+
+            setTimeout(function() {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                setTimeout(function() {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        document.addEventListener('htmx:responseError', function(evt) {
+            showToast('Something went wrong. Please try again.', 'error');
+        });
+
+        document.addEventListener('htmx:sendError', function(evt) {
+            showToast('Network error. Check your connection.', 'error');
+        });
+
+        document.addEventListener('htmx:afterSwap', function(evt) {
+            const target = evt.detail.target;
+            if (!target) return;
+            const trigger = target.querySelector('[data-toast]');
+            if (trigger) {
+                showToast(trigger.getAttribute('data-toast'), 'success');
+            }
+            const counters = target.querySelectorAll('textarea[data-char-counter], [contenteditable="true"][data-char-counter]');
+            counters.forEach(updateCharCounter);
+        });
+
+        function updateCharCounter(target) {
+            if (!target) return;
+            const counterId = target.getAttribute('data-char-counter');
+            const counter = document.getElementById(counterId);
+            if (!counter) return;
+            let length = 0;
+            if (target.value !== undefined) {
+                length = target.value.length;
+            } else if (target.innerText !== undefined) {
+                length = target.innerText.length;
+            }
+            counter.textContent = length + ' characters';
+        }
+
+        document.addEventListener('input', function(evt) {
+            const target = evt.target;
+            if (!target) return;
+            if (target.matches('textarea[data-char-counter]') || target.matches('[contenteditable="true"][data-char-counter]')) {
+                updateCharCounter(target);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('textarea[data-char-counter], [contenteditable="true"][data-char-counter]').forEach(updateCharCounter);
+        });
+    </script>
+</body>
+</html>

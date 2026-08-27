@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
+      - name: Build binaries
+        run: |
+          mkdir -p dist
+          set -e
+          for os in linux darwin; do
+            for arch in amd64 arm64; do
+              asset="sylloge-${os}-${arch}"
+              GOOS="$os" GOARCH="$arch" CGO_ENABLED=0 \
+                go build -trimpath \
+                  -ldflags "-s -w -X main.version=${GITHUB_REF_NAME}" \
+                  -o "dist/${asset}" ./cmd/sylloge
+            done
+          done
+
+      - name: Generate checksums
+        run: |
+          cd dist
+          for f in sylloge-*; do
+            echo "$(sha256sum "$f" | awk '{print $1}')  $f" > "$f.sha256"
+          done
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/sylloge-*
+          generate_release_notes: true

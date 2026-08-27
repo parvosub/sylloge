@@ -1,0 +1,24 @@
+# Sylloge configuration
+# Copy this file to sylloge.toml and edit it to match your environment.
+# The app reads sylloge.toml by default (override with the SYLLOGE_CONFIG env var).
+
+[database]
+# Path to the SQLite database file.
+path = "sylloge.db"
+
+[llm]
+# "local" uses Ollama (or any local OpenAI-compatible server).
+# "cloud" uses a cloud OpenAI-compatible provider and requires api.api_key.
+provider = "local"
+# Model to use for summarization. For local Ollama, the model must be
+# installed on the server (e.g. `ollama pull qwen3:8b`).
+model = "qwen3:8b"
+# Optional system prompt guiding the summary style.
+system_prompt = "You are a supportive teaching assistant writing a report-card comment for one student."
+
+[api]
+# OpenAI-compatible base URL. For local Ollama, this is http://host:11434/v1.
+# For cloud providers, use their OpenAI-compatible endpoint.
+base_url = "http://localhost:11434/v1"
+# API key. Leave empty for local Ollama; required when llm.provider = "cloud".
+api_key = ""

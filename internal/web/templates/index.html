@@ -1,0 +1,23 @@
+{{define "main"}}
+<div class="dashboard-header">
+    <h3>Classes</h3>
+    <button type="button" class="btn-primary btn-sm" onclick="document.getElementById('add-class-form').style.display='block'; document.getElementById('class-name').focus();">
+        Add Class
+    </button>
+</div>
+
+<div id="add-class-form" class="card" style="display: none;">
+    <form hx-post="/classes" hx-target="#class-list" hx-swap="innerHTML" onsubmit="document.getElementById('add-class-form').style.display='none';">
+        <div class="form-group">
+            <label for="class-name">Class Name</label>
+            <input type="text" id="class-name" name="name" placeholder="e.g. Painting 101" required>
+        </div>
+        <button type="submit">Add Class</button>
+        <button type="button" class="btn-secondary btn-sm" onclick="document.getElementById('add-class-form').style.display='none'">Cancel</button>
+    </form>
+</div>
+
+<div id="class-list">
+    {{template "classList" .}}
+</div>
+{{end}}

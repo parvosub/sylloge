@@ -1,0 +1,17 @@
+services:
+  sylloge:
+    build: .
+    container_name: sylloge
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - SYLLOGE_ADDR=:8080
+      - SYLLOGE_DB=/data/sylloge.db
+      - SYLLOGE_CONFIG=/config/sylloge.toml
+    volumes:
+      - sylloge-data:/data
+      - ./sylloge.toml:/config/sylloge.toml:ro
+
+volumes:
+  sylloge-data:

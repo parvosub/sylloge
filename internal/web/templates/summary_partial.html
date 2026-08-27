@@ -1,0 +1,16 @@
+{{define "summary"}}
+{{if .Error}}
+<div class="error" role="alert">{{.Error}}</div>
+{{else if .SummaryHTML}}
+<div class="summary">
+    <h5>Generated Summary</h5>
+    <p id="summary-help" class="help-text">Edit the summary below until it reads the way you want, then copy or download it.</p>
+    <div id="summary" class="summary-box" contenteditable="true" aria-describedby="summary-help" data-char-counter="summary-counter">{{.SummaryHTML}}</div>
+    <div id="summary-counter" class="char-counter">&nbsp;</div>
+    <div class="summary-actions">
+        <button type="button" class="btn-secondary" onclick="copySummaryToClipboard()" aria-label="Copy summary to clipboard">Copy Summary</button>
+        <button type="button" class="btn-primary" onclick="downloadSummary('{{.StudentName | sanitizeFilename}}', document.getElementById('summary').innerText)">Download Summary</button>
+    </div>
+</div>
+{{end}}
+{{end}}
