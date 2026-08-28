@@ -43,9 +43,13 @@ Screenshot placeholder: `docs/screenshot.png` (coming soon).
 
 ### Option 1 — Docker
 
-Pull the prebuilt image from GitHub Container Registry (no source needed):
+Sylloge is published as a prebuilt image to GitHub Container Registry.
+
+**With Docker Compose** (clone needed for the example files):
 
 ```sh
+git clone https://github.com/parvosub/sylloge.git
+cd sylloge
 cp sylloge.toml.example sylloge.toml   # edit for your LLM
 docker compose up -d
 # open http://localhost:8080
@@ -53,6 +57,19 @@ docker compose up -d
 
 The included `docker-compose.yml` pulls `ghcr.io/parvosub/sylloge:latest`. To
 build from source instead, edit it and replace `image:` with `build: .`.
+
+**Without cloning** (plain `docker run`):
+
+```sh
+curl -fsSL -o sylloge.toml \
+  https://raw.githubusercontent.com/parvosub/sylloge/main/sylloge.toml.example
+# edit sylloge.toml to point at your LLM
+docker run -d --name sylloge -p 8080:8080 \
+  -v sylloge-data:/data \
+  -v "$PWD/sylloge.toml":/config/sylloge.toml:ro \
+  ghcr.io/parvosub/sylloge:latest
+# open http://localhost:8080
+```
 
 The database is persisted in a named volume (`sylloge-data`) and your config is
 mounted read-only.
