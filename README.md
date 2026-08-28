@@ -60,6 +60,14 @@ docker run -d \
 
 This pulls the image published to GHCR on each tagged release. No source needed.
 
+Prefer Compose? Use the included example file:
+
+```sh
+cp docker-compose.yml.example docker-compose.yml
+cp sylloge.toml.example sylloge.toml   # edit for your LLM
+docker compose up -d
+```
+
 **B. Build from source**
 
 ```sh
