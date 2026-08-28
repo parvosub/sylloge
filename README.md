@@ -41,9 +41,30 @@ Screenshot placeholder: `docs/screenshot.png` (coming soon).
 
 ## Install
 
-### Option 1 — Docker (recommended for a server)
+### Option 1 — Docker
+
+There are two ways to run it with Docker: pull the prebuilt image from GitHub
+Container Registry, or build from source.
+
+**A. Pull the prebuilt image (recommended)**
 
 ```sh
+docker run -d \
+  --name sylloge \
+  -p 8080:8080 \
+  -v sylloge-data:/data \
+  -v "$PWD/sylloge.toml":/config/sylloge.toml:ro \
+  ghcr.io/parvosub/sylloge:latest
+# open http://localhost:8080
+```
+
+This pulls the image published to GHCR on each tagged release. No source needed.
+
+**B. Build from source**
+
+```sh
+git clone https://github.com/parvosub/sylloge.git
+cd sylloge
 cp sylloge.toml.example sylloge.toml   # edit for your LLM
 docker compose up -d --build
 # open http://localhost:8080
