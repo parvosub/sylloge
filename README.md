@@ -43,40 +43,16 @@ Screenshot placeholder: `docs/screenshot.png` (coming soon).
 
 ### Option 1 — Docker
 
-There are two ways to run it with Docker: pull the prebuilt image from GitHub
-Container Registry, or build from source.
-
-**A. Pull the prebuilt image (recommended)**
+Pull the prebuilt image from GitHub Container Registry (no source needed):
 
 ```sh
-docker run -d \
-  --name sylloge \
-  -p 8080:8080 \
-  -v sylloge-data:/data \
-  -v "$PWD/sylloge.toml":/config/sylloge.toml:ro \
-  ghcr.io/parvosub/sylloge:latest
-# open http://localhost:8080
-```
-
-This pulls the image published to GHCR on each tagged release. No source needed.
-
-Prefer Compose? Use the included example file:
-
-```sh
-cp docker-compose.yml.example docker-compose.yml
 cp sylloge.toml.example sylloge.toml   # edit for your LLM
 docker compose up -d
-```
-
-**B. Build from source**
-
-```sh
-git clone https://github.com/parvosub/sylloge.git
-cd sylloge
-cp sylloge.toml.example sylloge.toml   # edit for your LLM
-docker compose up -d --build
 # open http://localhost:8080
 ```
+
+The included `docker-compose.yml` pulls `ghcr.io/parvosub/sylloge:latest`. To
+build from source instead, edit it and replace `image:` with `build: .`.
 
 The database is persisted in a named volume (`sylloge-data`) and your config is
 mounted read-only.

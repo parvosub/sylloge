@@ -1,6 +1,16 @@
+# docker-compose for Sylloge — runs the prebuilt image from GHCR.
+#
+#   cp sylloge.toml.example sylloge.toml   # edit for your LLM
+#   docker compose up -d
+#
+# To build from source instead, replace "image:" below with "build: .".
+
 services:
   sylloge:
-    build: .
+    # Prebuilt image published to GHCR on each tagged release.
+    # "latest" tracks the most recent release; pin a tag for stability
+    # (e.g. ghcr.io/parvosub/sylloge:v1.0.0).
+    image: ghcr.io/parvosub/sylloge:latest
     container_name: sylloge
     restart: unless-stopped
     ports:
@@ -11,6 +21,8 @@ services:
       - SYLLOGE_CONFIG=/config/sylloge.toml
     volumes:
       - sylloge-data:/data
+      # Mount your config file read-only. Create it from sylloge.toml.example
+      # and point llm.api.base_url at your LLM (Ollama or a cloud provider).
       - ./sylloge.toml:/config/sylloge.toml:ro
 
 volumes:
