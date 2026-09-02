@@ -2,15 +2,15 @@
 
 ## Project
 
-Greenfield project (repo is currently empty). Product: a grade and comment website for teachers.
+Grade and comment website for teachers. Live public repo:
+https://github.com/parvosub/sylloge (MIT, owner `parvosub`). v1 shipped as
+release `v1.0.0` (binaries + GHCR Docker image).
 
 Core flow:
 1. Teacher enters free-form, unstructured notes about a student's work through the web front end.
 2. An AI model transforms those notes into a coherent summary of the student's work.
 
-## Status: design committed (v1)
-
-Design session complete. Stack and scope below are committed for v1.
+## Status: v1 shipped
 
 ## Users & context
 
@@ -40,10 +40,10 @@ Design session complete. Stack and scope below are committed for v1.
   no JS build pipeline.
 - **Storage**: **SQLite** (single file, backed up to NAS). Schema: `classes` → `students` →
   `notes` / `summaries`.
-- **AI**: local **Ollama** on the dedicated Arch LLM box (i7 10700k, 64GB RAM, RTX 3090 24GB), reached
-  over the LAN via its HTTP API (`/api/generate`). Wrapped behind a small Go `Summarizer` interface so
-  the provider is swappable. Model + temperature/top_p + system prompt live in a **Modelfile** on the
-  Ollama side — never exposed to the teacher.
+- **AI**: any **OpenAI-compatible** endpoint — local Ollama (`/v1`) or a cloud
+  provider. Wrapped behind a small Go `Summarizer` interface so the provider is
+  swappable. Connection details live in `sylloge.toml` — never exposed to the
+  teacher.
 - **Deploy**: app in a small Docker container on Proxmox; Ollama stays on the dedicated GPU box.
 
 ## Deferred (future versions)
@@ -71,8 +71,9 @@ the frontier `review` agent audits the diff. If you are the `build` agent, follo
   `internal/web` for templates). Nothing importable outside this module.
 - **Stack discipline**: Go stdlib first. Server-rendered `html/template` + HTMX only.
   No SPA, no JS framework, no JS build pipeline. SQLite via a single store package.
-- **AI provider**: keep the `Summarizer` interface small and provider-agnostic; the
-  Ollama impl POSTs to `/api/generate`. Config via env vars — never hardcode host/model.
+- **AI provider**: keep the `Summarizer` interface small and provider-agnostic;
+  the impl POSTs to the OpenAI-compatible `/v1/chat/completions`. Config comes
+  from the TOML file — never hardcode host/model/key.
 - **Scope guard**: obey the "Do not" list above (no auth, no external access, no
   multi-student batching, no LLM settings in the UI for v1). If a task implies any of
   these, stop and flag it rather than implementing it.
@@ -83,23 +84,17 @@ the frontier `review` agent audits the diff. If you are the `build` agent, follo
 
 ## Next session — start here
 
-All 7 roadmap steps implemented. v1 is end-to-end verified locally with real
-Ollama (`qwen3.5:27b-q4_K_M`). `go build ./...`, `go vet ./...`, `go test ./...`
-all pass (store, summarize, server packages have real table-driven tests).
+**v1 is shipped.** Live at https://github.com/parvosub/sylloge — release
+`v1.0.0` (binaries + checksums on Releases, image on GHCR). CI green.
+Read `docs/session-2026-09-01.md` for the full ship-session summary,
+verified/unverified list, and workflow notes (permissions, security hook).
 
-**Git**: initialized, initial commit on `main`. No remote configured yet.
-
-**Build roadmap (v1) status:**
-1. Project skeleton — DONE
-2. Data layer — DONE (SQLite schema + `internal/store` CRUD)
-3. Summarizer interface — DONE (`internal/summarize`, Ollama impl, env config)
-4. HTTP server + templates — DONE (routes, per-page `html/template` sets, HTMX)
-5. Core UI flow — DONE (full flow: class → student → notes → summary → save)
-6. Packaging — DONE on disk: Dockerfile + docker-compose + README env table.
-   **Not yet verified**: no Docker on dev machine; `docker compose up -d --build`
-   on the Proxmox host.
-7. Modelfile — DONE on disk (`Modelfile`, temperature 0.9 / top_p 0.95).
-   **Not yet verified**: `ollama create sylloge -f Modelfile` on the Ollama box.
+**Current architecture**: `cmd/sylloge` (entrypoint, `--version`) +
+`internal/{config,store,summarize,server,web}`. TOML config
+(`sylloge.toml`, copy from `sylloge.toml.example`) is the single source of
+truth for database path, LLM provider/model/system prompt, and API
+base_url/api_key. `SYLLOGE_ADDR` sets the listen address; `SYLLOGE_CONFIG`
+overrides the config path.
 
 **Running locally (no Docker):**
 ```sh
@@ -109,16 +104,19 @@ go run ./cmd/sylloge
 ```
 Database: `sylloge.db` in project root (gitignored).
 
-**What the customer is reviewing now:**
-- The app is running at `localhost:8080` for browser testing.
-- Customer feedback is pending — wait for their input before next steps.
+**Unverified (needs other hosts):**
+- `docker compose up -d` on the Proxmox host (pulls the GHCR image).
+- The curl installer from a fresh machine against a real release.
+- GHCR image is linux/amd64 only (arm64 needs the binary or source build).
 
-**Unverified (needs Proxmox host):**
-- `docker compose up -d --build` — verify Docker image builds and runs.
-- `ollama create sylloge -f Modelfile` on the Ollama box.
+**When adding a new feature:** start with a `docs/specs/` spec from the
+`plan` agent, then hand it to the local `build` agent, then `review`.
+Obey the "Do not" list above — items there need their own v2 spec first.
 
-**Future versions (deferred — do not build in v1):**
+**Future versions (deferred — do not build without a new spec):**
 - Auth + reverse proxy for outside access.
 - Multi-student batch input.
 - LLM parameter sliders in UI.
 - PII anonymization before sending to model.
+- Multi-arch (linux/arm64) Docker image.
+- Auto-generate default config on first run.
