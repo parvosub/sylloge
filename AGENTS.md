@@ -14,13 +14,13 @@ Core flow:
 
 ## Users & context
 
-- **Single user**: one art teacher, not tech savvy. UI must be dead simple or she won't use it.
-- **Scale**: 1 teacher, 4 classes (entered by teacher), multiple students per class (entered by teacher).
+- **Single user**: one teacher, non-technical. The UI must stay dead simple.
+- **Scale**: 1 teacher, a handful of classes (entered by teacher), multiple students per class (entered by teacher).
 - **Environment**: deployed on a local server in a homelab, accessed via a web browser on the LAN.
-- **Workflow**: teacher adds notes over time (days/months); at end of semester/year she copies the
-  generated summary out and pastes it into her school's website.
-- **Owner**: cloud systems admin (Operations), learning C, comfortable with Docker/Terraform/Ansible/IaC,
-  reads Python but does not write it. Project doubles as a GitHub portfolio piece.
+- **Workflow**: the teacher adds notes over time (days/months); at end of semester/year the
+  generated summary is copied out and pasted into the school's website.
+- **Owner**: operations background. The repo doubles as a portfolio piece, so
+  code quality and documentation matter.
 
 ## v1 scope
 
@@ -28,14 +28,14 @@ Core flow:
   summary lands in an **editable** text box → teacher copies it out.
 - **Per-student**: one student, one summary at a time.
 - **Persistence**: classes, students, notes, and summaries are saved in SQLite and persist across
-  days/months so she can revisit and edit.
+  days/months so the teacher can revisit and edit.
 - **No auth** for v1 (single user on trusted LAN).
 - Teacher never touches LLM settings.
 
 ## Committed stack
 
-- **Backend**: Go. Single static binary, trivial Docker deploy, career-aligned for the owner, adjacent
-  to C. Renders HTML server-side via `html/template`.
+- **Backend**: Go. Single static binary, trivial Docker deploy.
+  Renders HTML server-side via `html/template`.
 - **Frontend**: server-rendered HTML + **HTMX** for the dynamic submit→summary interaction. No SPA,
   no JS build pipeline.
 - **Storage**: **SQLite** (single file, backed up to NAS). Schema: `classes` → `students` →
@@ -44,7 +44,8 @@ Core flow:
   provider. Wrapped behind a small Go `Summarizer` interface so the provider is
   swappable. Connection details live in `sylloge.toml` — never exposed to the
   teacher.
-- **Deploy**: app in a small Docker container on Proxmox; Ollama stays on the dedicated GPU box.
+- **Deploy**: small Docker container (GHCR image) or a single binary on a LAN server;
+  the LLM endpoint is wherever `sylloge.toml` points.
 
 ## Deferred (future versions)
 
