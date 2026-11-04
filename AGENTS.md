@@ -90,6 +90,10 @@ the frontier `review` agent audits the diff. If you are the `build` agent, follo
 Read `docs/session-2026-09-01.md` for the full ship-session summary,
 verified/unverified list, and workflow notes (permissions, security hook).
 
+**Latest work:** Delete Class shipped on `main` (see `docs/session-2026-11-03.md`
+and `docs/specs/delete-class.md`). Next planned: more "clear data" steps
+(delete a student; clear a student's notes/summaries), each with its own spec.
+
 **Current architecture**: `cmd/sylloge` (entrypoint, `--version`) +
 `internal/{config,store,summarize,server,web}`. TOML config
 (`sylloge.toml`, copy from `sylloge.toml.example`) is the single source of
