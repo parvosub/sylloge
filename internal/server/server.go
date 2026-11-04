@@ -38,6 +38,7 @@ func (s *Server) routes() http.Handler {
 	mux.HandleFunc("GET /classes/{id}", s.handleClass)
 	mux.HandleFunc("GET /students/{id}", s.handleStudent)
 	mux.HandleFunc("POST /classes", s.handleCreateClass)
+	mux.HandleFunc("POST /classes/delete", s.handleDeleteClass)
 	mux.HandleFunc("POST /classes/{id}/students", s.handleAddStudent)
 	mux.HandleFunc("POST /notes/{id}", s.handleAppendNote)
 	mux.HandleFunc("POST /students/{id}/summary", s.handleGenerateSummary)
@@ -166,7 +167,39 @@ func (s *Server) handleCreateClass(w http.ResponseWriter, r *http.Request) {
 		s.internalError(w, err)
 		return
 	}
-	if err := s.renderPartial(w, "index", "classList", map[string]any{"Classes": classes}); err != nil {
+	if err := s.renderPartial(w, "index", "classListResponse", map[string]any{"Classes": classes, "OOB": true}); err != nil {
+		s.internalError(w, err)
+	}
+}
+
+// handleDeleteClass deletes the class chosen in the dashboard's delete form,
+// along with its students, notes, and summaries, then re-renders the class
+// list and (out-of-band) the delete dropdown.
+func (s *Server) handleDeleteClass(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	classID, err := strconv.ParseInt(r.FormValue("class_id"), 10, 64)
+	if err != nil {
+		http.Error(w, "invalid class id", http.StatusBadRequest)
+		return
+	}
+	if err := s.store.DeleteClass(ctx, classID); err != nil {
+		if err == store.ErrNotFound {
+			http.NotFound(w, r)
+			return
+		}
+		s.internalError(w, err)
+		return
+	}
+	classes, err := s.store.ListClasses(ctx)
+	if err != nil {
+		s.internalError(w, err)
+		return
+	}
+	if err := s.renderPartial(w, "index", "classListResponse", map[string]any{
+		"Classes": classes,
+		"OOB":     true,
+		"Toast":   "Class deleted",
+	}); err != nil {
 		s.internalError(w, err)
 	}
 }

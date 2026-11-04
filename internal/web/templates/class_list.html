@@ -13,3 +13,20 @@
 </div>
 {{end}}
 {{end}}
+{{define "deleteClassSelect"}}
+<select id="delete-class-select" name="class_id" required{{if .OOB}} hx-swap-oob="true"{{end}}>
+    {{if .Classes}}
+    <option value="">Choose a class…</option>
+    {{range .Classes}}
+    <option value="{{.ID}}">{{.Name}}</option>
+    {{end}}
+    {{else}}
+    <option value="" disabled selected>No classes to delete</option>
+    {{end}}
+</select>
+{{end}}
+{{define "classListResponse"}}
+{{if .Toast}}<span hidden data-toast="{{.Toast}}"></span>{{end}}
+{{template "classList" .}}
+{{template "deleteClassSelect" .}}
+{{end}}

@@ -151,25 +151,61 @@ func TestDeleteClass(t *testing.T) {
 	store := newTestStore(t)
 	ctx := context.Background()
 
-	// Create a class
-	classID, err := store.CreateClass(ctx, "Math")
-	if err != nil {
-		t.Fatalf("CreateClass: %v", err)
+	// seed creates a class with one student who has a note and a summary.
+	seed := func(className, studentName string) (int64, int64) {
+		t.Helper()
+		classID, err := store.CreateClass(ctx, className)
+		if err != nil {
+			t.Fatalf("CreateClass: %v", err)
+		}
+		studentID, err := store.CreateStudent(ctx, classID, studentName)
+		if err != nil {
+			t.Fatalf("CreateStudent: %v", err)
+		}
+		if _, err := store.AppendNote(ctx, studentID, "a note"); err != nil {
+			t.Fatalf("AppendNote: %v", err)
+		}
+		if _, err := store.SaveSummary(ctx, studentID, "a summary"); err != nil {
+			t.Fatalf("SaveSummary: %v", err)
+		}
+		return classID, studentID
 	}
 
-	// Delete the class
-	err = store.DeleteClass(ctx, classID)
-	if err != nil {
+	classID, studentID := seed("Math", "Alice")
+	keepClassID, keepStudentID := seed("Art", "Bob")
+
+	if err := store.DeleteClass(ctx, classID); err != nil {
 		t.Fatalf("DeleteClass: %v", err)
 	}
 
-	// List classes should return empty
-	classes, err := store.ListClasses(ctx)
-	if err != nil {
-		t.Fatalf("ListClasses: %v", err)
+	// Deleted class and everything under it is gone.
+	if _, err := store.GetClass(ctx, classID); err != ErrNotFound {
+		t.Errorf("GetClass after delete: err = %v, want ErrNotFound", err)
 	}
-	if len(classes) != 0 {
-		t.Errorf("Expected 0 classes after deletion, got %d", len(classes))
+	if _, err := store.GetStudent(ctx, studentID); err != ErrNotFound {
+		t.Errorf("GetStudent after delete: err = %v, want ErrNotFound", err)
+	}
+	if notes, err := store.ListNotesByStudent(ctx, studentID); err != nil || len(notes) != 0 {
+		t.Errorf("notes after delete: got %d (err %v), want 0", len(notes), err)
+	}
+	if sums, err := store.ListSummariesByStudent(ctx, studentID); err != nil || len(sums) != 0 {
+		t.Errorf("summaries after delete: got %d (err %v), want 0", len(sums), err)
+	}
+
+	// The other class is untouched.
+	if _, err := store.GetClass(ctx, keepClassID); err != nil {
+		t.Errorf("GetClass(other): %v", err)
+	}
+	if notes, err := store.ListNotesByStudent(ctx, keepStudentID); err != nil || len(notes) != 1 {
+		t.Errorf("other class notes: got %d (err %v), want 1", len(notes), err)
+	}
+	if sums, err := store.ListSummariesByStudent(ctx, keepStudentID); err != nil || len(sums) != 1 {
+		t.Errorf("other class summaries: got %d (err %v), want 1", len(sums), err)
+	}
+
+	// Deleting a missing class reports ErrNotFound.
+	if err := store.DeleteClass(ctx, classID); err != ErrNotFound {
+		t.Errorf("DeleteClass(missing): err = %v, want ErrNotFound", err)
 	}
 }
 

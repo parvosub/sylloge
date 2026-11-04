@@ -14,5 +14,7 @@ states its in-scope / out-of-scope boundaries and acceptance criteria.
 - `web-enhancements-phase1.md` — dashboard, DORFic theme, summary history,
   editable summaries.
 - `remove-timestamps-from-cards.md` — tightening the UI.
+- `delete-class.md` — deleting a class (and its students, notes, summaries)
+  from the dashboard.
 
 These are kept as a historical record of how the project was planned and built.
