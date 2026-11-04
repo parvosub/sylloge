@@ -147,10 +147,38 @@ func (s *Store) CreateClass(ctx context.Context, name string) (int64, error) {
 	return id, err
 }
 
-// DeleteClass deletes a class by ID
+// DeleteClass deletes a class and all of its students, notes, and summaries
+// in a single transaction. It returns ErrNotFound if the class does not exist.
+// The schema has no ON DELETE CASCADE, so dependent rows are removed explicitly.
 func (s *Store) DeleteClass(ctx context.Context, id int64) error {
-	_, err := s.db.ExecContext(ctx, "DELETE FROM classes WHERE id = ?", id)
-	return err
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback() // no-op after a successful Commit
+
+	for _, q := range []string{
+		"DELETE FROM summaries WHERE student_id IN (SELECT id FROM students WHERE class_id = ?)",
+		"DELETE FROM notes WHERE student_id IN (SELECT id FROM students WHERE class_id = ?)",
+		"DELETE FROM students WHERE class_id = ?",
+	} {
+		if _, err := tx.ExecContext(ctx, q, id); err != nil {
+			return err
+		}
+	}
+
+	res, err := tx.ExecContext(ctx, "DELETE FROM classes WHERE id = ?", id)
+	if err != nil {
+		return err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return ErrNotFound
+	}
+	return tx.Commit()
 }
 
 // DeleteAllNotesByStudent deletes all notes for a student

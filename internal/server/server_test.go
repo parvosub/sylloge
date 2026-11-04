@@ -363,3 +363,90 @@ func TestStudentPageCollapsesOldNotes(t *testing.T) {
 		}
 	}
 }
+func TestDeleteClassPOST(t *testing.T) {
+	tests := []struct {
+		name       string
+		form       func(classID int64) string
+		wantStatus int
+		wantGone   bool
+	}{
+		{name: "valid id", form: func(id int64) string { return "class_id=" + strconv.FormatInt(id, 10) }, wantStatus: http.StatusOK, wantGone: true},
+		{name: "non-numeric id", form: func(int64) string { return "class_id=abc" }, wantStatus: http.StatusBadRequest},
+		{name: "missing id", form: func(int64) string { return "" }, wantStatus: http.StatusBadRequest},
+		{name: "unknown id", form: func(int64) string { return "class_id=999" }, wantStatus: http.StatusNotFound},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := newTestServer(t)
+			ctx := context.Background()
+			classID, studentID := seedClassAndStudent(t, s)
+			if _, err := s.store.AppendNote(ctx, studentID, "note"); err != nil {
+				t.Fatalf("AppendNote: %v", err)
+			}
+
+			rec, req := postForm(t, "/classes/delete", tt.form(classID))
+			s.routes().ServeHTTP(rec, req)
+
+			if rec.Code != tt.wantStatus {
+				t.Fatalf("status = %d, want %d; body: %s", rec.Code, tt.wantStatus, rec.Body.String())
+			}
+			_, err := s.store.GetClass(ctx, classID)
+			if tt.wantGone {
+				if err != store.ErrNotFound {
+					t.Errorf("GetClass after delete: err = %v, want ErrNotFound", err)
+				}
+				if _, err := s.store.GetStudent(ctx, studentID); err != store.ErrNotFound {
+					t.Errorf("GetStudent after delete: err = %v, want ErrNotFound", err)
+				}
+				body := rec.Body.String()
+				if strings.Contains(body, "Art") {
+					t.Errorf("body still contains deleted class: %s", body)
+				}
+				for _, want := range []string{`id="delete-class-select"`, `hx-swap-oob="true"`, `data-toast="Class deleted"`} {
+					if !strings.Contains(body, want) {
+						t.Errorf("body missing %q: %s", want, body)
+					}
+				}
+			} else if err != nil {
+				t.Errorf("class should still exist, GetClass err = %v", err)
+			}
+		})
+	}
+}
+
+func TestCreateClassUpdatesDeleteSelect(t *testing.T) {
+	s := newTestServer(t)
+	rec, req := postForm(t, "/classes", "name=Math")
+	s.routes().ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", rec.Code)
+	}
+	body := rec.Body.String()
+	for _, want := range []string{`id="delete-class-select"`, `hx-swap-oob="true"`, `>Math</option>`} {
+		if !strings.Contains(body, want) {
+			t.Errorf("body missing %q: %s", want, body)
+		}
+	}
+}
+
+func TestIndexHasDeleteClassForm(t *testing.T) {
+	s := newTestServer(t)
+	if _, err := s.store.CreateClass(context.Background(), "Painting"); err != nil {
+		t.Fatalf("CreateClass: %v", err)
+	}
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	rec := httptest.NewRecorder()
+	s.routes().ServeHTTP(rec, req)
+
+	body := rec.Body.String()
+	for _, want := range []string{`hx-post="/classes/delete"`, `id="delete-class-select"`, `>Painting</option>`} {
+		if !strings.Contains(body, want) {
+			t.Errorf("index missing %q", want)
+		}
+	}
+	// The full-page render must not mark the select as out-of-band.
+	if strings.Contains(body, `hx-swap-oob`) {
+		t.Errorf("index should not contain hx-swap-oob")
+	}
+}

@@ -1,9 +1,14 @@
 {{define "main"}}
 <div class="dashboard-header">
     <h3>Classes</h3>
-    <button type="button" class="btn-primary btn-sm" onclick="document.getElementById('add-class-form').style.display='block'; document.getElementById('class-name').focus();">
-        Add Class
-    </button>
+    <div class="button-row">
+        <button type="button" class="btn-primary btn-sm" onclick="document.getElementById('delete-class-form').style.display='none'; document.getElementById('add-class-form').style.display='block'; document.getElementById('class-name').focus();">
+            Add Class
+        </button>
+        <button type="button" class="btn-danger btn-sm" onclick="document.getElementById('add-class-form').style.display='none'; document.getElementById('delete-class-form').style.display='block'; document.getElementById('delete-class-select').focus();">
+            Delete Class
+        </button>
+    </div>
 </div>
 
 <div id="add-class-form" class="card" style="display: none;">
@@ -14,6 +19,20 @@
         </div>
         <button type="submit">Add Class</button>
         <button type="button" class="btn-secondary btn-sm" onclick="document.getElementById('add-class-form').style.display='none'">Cancel</button>
+    </form>
+</div>
+
+<div id="delete-class-form" class="card" style="display: none;">
+    <form hx-post="/classes/delete" hx-target="#class-list" hx-swap="innerHTML"
+          hx-confirm="Delete this class and ALL of its students, notes, and summaries? This cannot be undone."
+          hx-on::after-request="if (event.detail.successful) document.getElementById('delete-class-form').style.display='none';">
+        <div class="form-group">
+            <label for="delete-class-select">Class to delete</label>
+            {{template "deleteClassSelect" .}}
+            <div class="help-text">This permanently removes the class and all of its students, notes, and summaries.</div>
+        </div>
+        <button type="submit" class="btn-danger">Delete Class</button>
+        <button type="button" class="btn-secondary btn-sm" onclick="document.getElementById('delete-class-form').style.display='none'">Cancel</button>
     </form>
 </div>
 
