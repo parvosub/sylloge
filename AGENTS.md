@@ -99,7 +99,8 @@ and `docs/specs/delete-class.md`). Next planned: more "clear data" steps
 (`sylloge.toml`, copy from `sylloge.toml.example`) is the single source of
 truth for database path, LLM provider/model/system prompt, and API
 base_url/api_key. `SYLLOGE_ADDR` sets the listen address; `SYLLOGE_CONFIG`
-overrides the config path.
+overrides the config path. `database.path` is the only DB location setting
+(no env override); use an absolute path such as `/data/sylloge.db` in Docker.
 
 **Running locally (no Docker):**
 ```sh

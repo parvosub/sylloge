@@ -22,7 +22,6 @@ COPY --from=build /out/sylloge /app/sylloge
 RUN mkdir -p /data /config
 
 ENV SYLLOGE_ADDR=:8080
-ENV SYLLOGE_DB=/data/sylloge.db
 ENV SYLLOGE_CONFIG=/config/sylloge.toml
 
 EXPOSE 8080

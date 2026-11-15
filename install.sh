@@ -45,10 +45,12 @@ install -m 0755 "${TMPDIR}/${ASSET}" "${INSTALL_DIR}/sylloge"
 mkdir -p "$CONFIG_DIR"
 CONFIG_FILE="${CONFIG_DIR}/sylloge.toml"
 if [ ! -f "$CONFIG_FILE" ]; then
-  cat > "$CONFIG_FILE" <<'EOF'
+  cat > "$CONFIG_FILE" <<EOF
 # Sylloge configuration
 [database]
-path = "sylloge.db"
+# Absolute path so the database does not depend on where you launch sylloge.
+# The folder must exist; the file is created on first run.
+path = "${CONFIG_DIR}/sylloge.db"
 
 [llm]
 provider = "local"

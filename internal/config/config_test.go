@@ -132,6 +132,46 @@ base_url = "http://x"
 	}
 }
 
+func TestLoadDatabasePath(t *testing.T) {
+	const rest = `
+[llm]
+provider = "local"
+model = "qwen3"
+[api]
+base_url = "http://x"
+`
+	tests := []struct {
+		name    string
+		dbLine  string
+		want    string
+		wantErr bool
+	}{
+		{name: "absolute preserved", dbLine: `path = "/data/sylloge.db"`, want: "/data/sylloge.db"},
+		{name: "relative preserved as written", dbLine: `path = "sylloge.db"`, want: "sylloge.db"},
+		{name: "relative subdir preserved", dbLine: `path = "var/sylloge.db"`, want: "var/sylloge.db"},
+		{name: "tilde not expanded", dbLine: `path = "~/sylloge.db"`, want: "~/sylloge.db"},
+		{name: "empty rejected", dbLine: `path = ""`, wantErr: true},
+		{name: "whitespace rejected", dbLine: `path = "   "`, wantErr: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg, err := Load(writeTempConfig(t, "[database]\n"+tt.dbLine+"\n"+rest))
+			if tt.wantErr {
+				if err == nil {
+					t.Fatal("expected error, got nil")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("Load: %v", err)
+			}
+			if cfg.Database.Path != tt.want {
+				t.Errorf("Database.Path = %q, want %q", cfg.Database.Path, tt.want)
+			}
+		})
+	}
+}
+
 func TestLoadMissingFile(t *testing.T) {
 	_, err := Load(filepath.Join(t.TempDir(), "nope.toml"))
 	if err == nil {

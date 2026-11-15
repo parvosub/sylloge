@@ -27,8 +27,11 @@ Request flow: `cmd/sylloge/main.go` loads `internal/config` (TOML) → opens
 
 - **Config**: `sylloge.toml` (path override: `SYLLOGE_CONFIG`) is the only
   source for DB path, LLM provider/model/system prompt, and API base_url/key.
-  `SYLLOGE_ADDR` is the only other env var the code reads (`SYLLOGE_DB` in the
-  Dockerfile/compose is not read). `config.validate` enforces
+  `SYLLOGE_ADDR` is the only other env var the code reads. The DB location
+  comes only from `database.path`: it is created on first run but its folder
+  is not, and a relative path resolves against the process CWD (`/app` in the
+  image), so Docker configs must use `/data/sylloge.db`. `main` logs the
+  absolute path at startup. `config.validate` enforces
   provider ∈ {local, cloud}, and that cloud requires api_key.
 - **Store**: schema is created with `CREATE TABLE IF NOT EXISTS` in
   `createTables`; there is no migration system. Notes are append-only;
