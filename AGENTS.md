@@ -90,16 +90,20 @@ the frontier `review` agent audits the diff. If you are the `build` agent, follo
 Read `docs/session-2026-09-01.md` for the full ship-session summary,
 verified/unverified list, and workflow notes (permissions, security hook).
 
-**Latest work:** Delete Class shipped on `main` (see `docs/session-2026-11-03.md`
-and `docs/specs/delete-class.md`). Next planned: more "clear data" steps
-(delete a student; clear a student's notes/summaries), each with its own spec.
+**Latest work:** Docker database-location fix is in PR #1
+(`fix/database-path-config`), awaiting review and a container verification; see
+`docs/session-2026-11-14.md` for status and next steps. Before that, Delete Class
+shipped on `main` (`docs/session-2026-11-03.md`, `docs/specs/delete-class.md`).
+Next planned after the PR: more "clear data" steps (delete a student; clear a
+student's notes/summaries), each with its own spec.
 
 **Current architecture**: `cmd/sylloge` (entrypoint, `--version`) +
 `internal/{config,store,summarize,server,web}`. TOML config
 (`sylloge.toml`, copy from `sylloge.toml.example`) is the single source of
 truth for database path, LLM provider/model/system prompt, and API
 base_url/api_key. `SYLLOGE_ADDR` sets the listen address; `SYLLOGE_CONFIG`
-overrides the config path.
+overrides the config path. `database.path` is the only DB location setting
+(no env override); use an absolute path such as `/data/sylloge.db` in Docker.
 
 **Running locally (no Docker):**
 ```sh

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/parvosub/sylloge/internal/config"
 	"github.com/parvosub/sylloge/internal/server"
@@ -33,7 +34,12 @@ func main() {
 		log.Fatalf("loading config: %v", err)
 	}
 
-	st, err := store.Open(cfg.Database.Path)
+	dbPath, err := filepath.Abs(cfg.Database.Path)
+	if err != nil {
+		log.Fatalf("resolving database path %q: %v", cfg.Database.Path, err)
+	}
+	log.Printf("database: %s", dbPath)
+	st, err := store.Open(dbPath)
 	if err != nil {
 		log.Fatal(err)
 	}

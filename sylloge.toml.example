@@ -3,7 +3,31 @@
 # The app reads sylloge.toml by default (override with the SYLLOGE_CONFIG env var).
 
 [database]
-# Path to the SQLite database file.
+# Where Sylloge keeps its SQLite database (all classes, notes and summaries).
+#
+# How it works:
+#   - The file is created on first run if it does not exist, and reused on
+#     every later run.
+#   - Sylloge does NOT create folders. The parent folder must already exist
+#     and be writable, otherwise startup fails (e.g. "no such file or
+#     directory" or "permission denied"). Run `mkdir` first if needed.
+#   - A relative path is resolved against the directory you START Sylloge
+#     from, not the location of this file. An absolute path is safer.
+#   - "~" is not expanded; write the full path.
+#
+# Examples:
+#   path = "/home/you/.sylloge/sylloge.db"   # installed binary: folder exists,
+#                                            # file is created on first run
+#   path = "/data/sylloge.db"                # Docker: /data is the sylloge-data
+#                                            # volume, so data survives
+#                                            # `docker compose down && up`
+#   path = "sylloge.db"                      # local dev: ./sylloge.db in the
+#                                            # folder you run from. In Docker
+#                                            # this becomes /app/sylloge.db
+#                                            # inside the container and is LOST
+#                                            # when the container is recreated.
+#
+# Sylloge logs the absolute path it opened at startup ("database: ...").
 path = "sylloge.db"
 
 [llm]

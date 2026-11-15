@@ -17,12 +17,15 @@ services:
       - "8080:8080"
     environment:
       - SYLLOGE_ADDR=:8080
-      - SYLLOGE_DB=/data/sylloge.db
       - SYLLOGE_CONFIG=/config/sylloge.toml
     volumes:
       - sylloge-data:/data
-      # Mount your config file read-only. Create it from sylloge.toml.example
-      # and point llm.api.base_url at your LLM (Ollama or a cloud provider).
+      # Mount your config file read-only. Create it from sylloge.toml.example,
+      # point api.base_url at your LLM (Ollama or a cloud provider), and set
+      #   [database]
+      #   path = "/data/sylloge.db"
+      # so the database lands on the sylloge-data volume above. A relative
+      # path would write inside the container and be lost on recreate.
       - ./sylloge.toml:/config/sylloge.toml:ro
 
 volumes:

@@ -63,7 +63,7 @@ build from source instead, edit it and replace `image:` with `build: .`.
 ```sh
 curl -fsSL -o sylloge.toml \
   https://raw.githubusercontent.com/parvosub/sylloge/main/sylloge.toml.example
-# edit sylloge.toml to point at your LLM
+# edit sylloge.toml: point at your LLM and set [database] path = "/data/sylloge.db"
 docker run -d --name sylloge -p 8080:8080 \
   -v sylloge-data:/data \
   -v "$PWD/sylloge.toml":/config/sylloge.toml:ro \
@@ -71,8 +71,12 @@ docker run -d --name sylloge -p 8080:8080 \
 # open http://localhost:8080
 ```
 
-The database is persisted in a named volume (`sylloge-data`) and your config is
-mounted read-only.
+Your config is mounted read-only at `/config/sylloge.toml`. The database is only
+persisted in the named volume (`sylloge-data`, mounted at `/data`) if your
+`sylloge.toml` sets `path = "/data/sylloge.db"` under `[database]`. The example
+file's relative `sylloge.db` would write inside the container and be lost when
+it is recreated. Sylloge logs the database path it opened at startup
+(`docker logs sylloge`).
 
 ### Option 2 — curl installer (prebuilt binary)
 
@@ -98,7 +102,7 @@ Configuration is a single TOML file (default `sylloge.toml`, override with the
 
 ```toml
 [database]
-path = "sylloge.db"                 # SQLite database file
+path = "sylloge.db"                 # SQLite database file (see below)
 
 [llm]
 provider = "local"                  # "local" (Ollama) or "cloud"
@@ -109,6 +113,21 @@ system_prompt = "You are a supportive teaching assistant writing a report-card c
 base_url = "http://localhost:11434/v1"   # OpenAI-compatible endpoint
 api_key = ""                             # empty for local; required for cloud
 ```
+
+### Database location
+
+`database.path` is where Sylloge keeps its SQLite file. The file is created on
+first run, but the folder is not: it must already exist and be writable. A
+relative path is resolved against the directory you start Sylloge from, so
+prefer an absolute path for anything but local development:
+
+| Setup | `path` |
+|---|---|
+| Local dev (`go run`, repo root) | `sylloge.db` |
+| Installed binary (`install.sh` writes this) | `/home/you/.sylloge/sylloge.db` |
+| Docker (`sylloge-data` volume at `/data`) | `/data/sylloge.db` |
+
+`~` is not expanded. See the comments in `sylloge.toml.example` for details.
 
 ### Local (Ollama)
 
